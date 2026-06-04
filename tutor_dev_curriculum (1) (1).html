@@ -1,0 +1,508 @@
+
+<h2 class="sr-only">Учебный трек: разработка платформы репетитора — практические задания по уровням</h2>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .wrap { padding: 1.5rem 0 2rem; font-family: var(--font-sans); }
+  .level-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; margin-top: 2rem; }
+  .level-header:first-of-type { margin-top: 0; }
+  .level-badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .lvl-1 { background: #EAF3DE; color: #27500A; }
+  .lvl-2 { background: #E6F1FB; color: #0C447C; }
+  .lvl-3 { background: #EEEDFE; color: #3C3489; }
+  .lvl-4 { background: #FAECE7; color: #712B13; }
+  .level-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .level-sub { font-size: 13px; color: var(--color-text-secondary); margin-left: auto; }
+  .tasks { display: flex; flex-direction: column; gap: 8px; }
+  .task { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; cursor: pointer; }
+  .task-head { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+  .task-num { width: 26px; height: 26px; min-width: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; }
+  .n-green { background: #EAF3DE; color: #27500A; }
+  .n-blue { background: #E6F1FB; color: #0C447C; }
+  .n-purple { background: #EEEDFE; color: #3C3489; }
+  .n-coral { background: #FAECE7; color: #712B13; }
+  .task-info { flex: 1; min-width: 0; }
+  .task-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+  .task-desc { font-size: 12px; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: var(--color-background-secondary); }
+  .chevron { font-size: 16px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .task.open .chevron { transform: rotate(90deg); }
+  .task-body { display: none; border-top: 0.5px solid var(--color-border-tertiary); padding: 14px 16px; background: var(--color-background-secondary); }
+  .task.open .task-body { display: block; }
+  .task-body p { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 10px; }
+  .steps-list { list-style: none; }
+  .steps-list li { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; padding: 3px 0 3px 20px; position: relative; }
+  .steps-list li::before { content: "→"; position: absolute; left: 0; color: var(--color-text-tertiary); }
+  .result-label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 12px; margin-bottom: 4px; }
+  .result-value { font-size: 13px; color: var(--color-text-primary); background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 8px 12px; font-family: var(--font-mono); }
+  .ask-btn { margin-top: 12px; font-size: 12px; padding: 6px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; cursor: pointer; color: var(--color-text-secondary); }
+  .ask-btn:hover { background: var(--color-background-primary); }
+  .progress-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; padding: 12px 16px; background: var(--color-background-secondary); border-radius: var(--border-radius-lg); }
+  .progress-label { font-size: 13px; color: var(--color-text-secondary); white-space: nowrap; }
+  .progress-track { flex: 1; height: 5px; background: var(--color-border-tertiary); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #639922; border-radius: 10px; width: 0%; transition: width 0.4s; }
+  .progress-count { font-size: 13px; font-weight: 500; color: var(--color-text-primary); white-space: nowrap; }
+  .done-mark { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--color-border-secondary); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: transparent; transition: all 0.15s; }
+  .done-mark.checked { background: #639922; border-color: #639922; color: white; }
+</style>
+
+<div class="wrap">
+  <div class="progress-bar-wrap">
+    <span class="progress-label">Прогресс</span>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+    <span class="progress-count" id="prog-count">0 / 16</span>
+  </div>
+
+  <div class="level-header">
+    <span class="level-badge lvl-1">Уровень 1 — Старт</span>
+    <span class="level-title">Базовая HTML/CSS/JS</span>
+    <span class="level-sub">4 задания</span>
+  </div>
+  <div class="tasks">
+
+    <div class="task" id="t1">
+      <div class="task-head" onclick="toggle('t1')">
+        <div class="done-mark" id="d-t1" onclick="markDone('t1',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-green">1</div>
+        <div class="task-info">
+          <div class="task-title">Задеплоить index.html на GitHub Pages</div>
+          <div class="task-desc">Создать репозиторий, загрузить файл, включить Pages</div>
+        </div>
+        <div class="task-meta"><span class="tag">git</span><span class="tag">30 мин</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Самая важная первая победа — увидеть свой сайт в интернете по реальному URL. Всё остальное строится на этом фундаменте.</p>
+        <ul class="steps-list">
+          <li>Создать аккаунт на GitHub (если нет) и новый публичный репозиторий</li>
+          <li>Загрузить скачанный <code>index.html</code> через веб-интерфейс (Add file → Upload)</li>
+          <li>Зайти в Settings → Pages, выбрать branch: main, папку: /(root), нажать Save</li>
+          <li>Через 2 минуты открыть <code>https://username.github.io/repo-name/</code></li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Сайт открывается, видна форма входа</div>
+        <button class="ask-btn" onclick="sendPrompt('Как создать репозиторий на GitHub и задеплоить HTML файл на GitHub Pages — пошаговая инструкция?')">Нужна помощь ↗</button>
+      </div>
+    </div>
+
+    <div class="task" id="t2">
+      <div class="task-head" onclick="toggle('t2')">
+        <div class="done-mark" id="d-t2" onclick="markDone('t2',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-green">2</div>
+        <div class="task-info">
+          <div class="task-title">Сменить мастер-пароль и добавить первого ученика</div>
+          <div class="task-desc">Понять структуру кода, найти нужную строку</div>
+        </div>
+        <div class="task-meta"><span class="tag">js</span><span class="tag">20 мин</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Научиться редактировать код и сразу видеть результат. Понять как работает <code>localStorage</code> — где хранятся данные.</p>
+        <ul class="steps-list">
+          <li>Открыть <code>index.html</code> в редакторе (VS Code или даже Notepad++)</li>
+          <li>Найти строку <code>const MASTER_PASS = 'tutor123'</code> и заменить пароль</li>
+          <li>Загрузить обновлённый файл на GitHub (там же Add file → Upload, заменить)</li>
+          <li>Войти на сайт с новым паролем, создать тестового ученика, добавить 3–4 блока</li>
+          <li>Открыть DevTools → Application → Local Storage — посмотреть как хранятся данные</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Страница ученика с текстом, формулой и тестом</div>
+      </div>
+    </div>
+
+    <div class="task" id="t3">
+      <div class="task-head" onclick="toggle('t3')">
+        <div class="done-mark" id="d-t3" onclick="markDone('t3',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-green">3</div>
+        <div class="task-info">
+          <div class="task-title">Изменить цвета и шрифт под свой стиль</div>
+          <div class="task-desc">Поработать с CSS-переменными в :root</div>
+        </div>
+        <div class="task-meta"><span class="tag">css</span><span class="tag">1–2 ч</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Перестать использовать чужой дизайн и сделать платформу «своей». CSS-переменные — главный инструмент для этого.</p>
+        <ul class="steps-list">
+          <li>Найти блок <code>:root { --bg: ...; --accent: ... }</code> в начале <code>&lt;style&gt;</code></li>
+          <li>Поменять <code>--accent</code> (основной цвет кнопок) и <code>--bg</code> (фон) на свои цвета</li>
+          <li>Добавить кастомный Google Font: вставить <code>&lt;link&gt;</code> в <code>&lt;head&gt;</code> и применить в <code>body</code></li>
+          <li>Изменить заголовок вкладки и иконку 📐 на что-то своё</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Сайт с уникальным визуальным стилем</div>
+        <button class="ask-btn" onclick="sendPrompt('Как подключить Google Font к HTML странице и применить его через CSS? Покажи пример с Montserrat')">Помощь с шрифтами ↗</button>
+      </div>
+    </div>
+
+    <div class="task" id="t4">
+      <div class="task-head" onclick="toggle('t4')">
+        <div class="done-mark" id="d-t4" onclick="markDone('t4',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-green">4</div>
+        <div class="task-info">
+          <div class="task-title">Настроить GitHub Sync и проверить запись данных</div>
+          <div class="task-desc">Personal Access Token, GitHub API, fetch()</div>
+        </div>
+        <div class="task-meta"><span class="tag">api</span><span class="tag">45 мин</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Данные в localStorage не переносятся между браузерами. GitHub Sync решает это — и заодно учит работать с REST API через <code>fetch()</code>.</p>
+        <ul class="steps-list">
+          <li>Создать Personal Access Token на github.com/settings/tokens с правом <code>repo</code></li>
+          <li>Войти на сайт как репетитор, нажать ⚙ GitHub, ввести данные</li>
+          <li>Сохранить страницу ученика, зайти в репозиторий — проверить появился ли файл <code>data/students.json</code></li>
+          <li>Открыть DevTools → Network, нажать «Сохранить» и посмотреть на запрос PUT к api.github.com</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Файл data/students.json появился в репозитории</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="level-header">
+    <span class="level-badge lvl-2">Уровень 2 — Расширение</span>
+    <span class="level-title">Новые функции</span>
+    <span class="level-sub">4 задания</span>
+  </div>
+  <div class="tasks">
+
+    <div class="task" id="t5">
+      <div class="task-head" onclick="toggle('t5')">
+        <div class="done-mark" id="d-t5" onclick="markDone('t5',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-blue">5</div>
+        <div class="task-info">
+          <div class="task-title">Добавить новый тип блока — «Аудио»</div>
+          <div class="task-desc">Скопировать паттерн video-блока, адаптировать для &lt;audio&gt;</div>
+        </div>
+        <div class="task-meta"><span class="tag">js</span><span class="tag">2–3 ч</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Первое самостоятельное расширение системы. Нужно понять архитектуру и повторить паттерн для нового типа данных.</p>
+        <ul class="steps-list">
+          <li>Найти в коде все места, где упоминается <code>'video'</code> — это шаблон для нового блока</li>
+          <li>Добавить <code>'audio'</code> в объект <code>typeNames</code> и в switch редактора (поле URL + кнопка)</li>
+          <li>Добавить рендер в <code>createViewBlock()</code>: тег <code>&lt;audio controls src="..."&gt;</code></li>
+          <li>Добавить кнопку «🎧 Аудио» в toolbar и дефолтные данные в <code>defaults</code></li>
+          <li>Протестировать: вставить ссылку на MP3 с GitHub или другого хостинга</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Ученик слышит аудио прямо на странице</div>
+        <button class="ask-btn" onclick="sendPrompt('Покажи пример HTML тега audio с атрибутами controls, src и type для mp3 файла')">Помощь с audio ↗</button>
+      </div>
+    </div>
+
+    <div class="task" id="t6">
+      <div class="task-head" onclick="toggle('t6')">
+        <div class="done-mark" id="d-t6" onclick="markDone('t6',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-blue">6</div>
+        <div class="task-info">
+          <div class="task-title">Добавить страницу «Домашние задания» с дедлайнами</div>
+          <div class="task-desc">Новый раздел в кабинете ученика с таблицей заданий</div>
+        </div>
+        <div class="task-meta"><span class="tag">js</span><span class="tag">css</span><span class="tag">3–4 ч</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Репетиторы часто дают домашние задания. Добавим отдельный список с дедлайнами и статусом выполнения.</p>
+        <ul class="steps-list">
+          <li>Добавить поле <code>homework: []</code> в структуру данных каждого ученика</li>
+          <li>В редакторе — добавить вкладку «ДЗ» рядом с блоками: форма добавить задание (текст + дедлайн)</li>
+          <li>В кабинете ученика — показать список ДЗ с чекбоксом «выполнено» и датой</li>
+          <li>Подсветить просроченные задания красным (сравнить дату с <code>new Date()</code>)</li>
+          <li>Сохранять отметки ученика о выполнении обратно в данные</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Список ДЗ с дедлайнами и цветовой индикацией</div>
+      </div>
+    </div>
+
+    <div class="task" id="t7">
+      <div class="task-head" onclick="toggle('t7')">
+        <div class="done-mark" id="d-t7" onclick="markDone('t7',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-blue">7</div>
+        <div class="task-info">
+          <div class="task-title">Статистика по тестам: сколько попыток и процент верных</div>
+          <div class="task-desc">Сохранять результаты тестов, показывать репетитору</div>
+        </div>
+        <div class="task-meta"><span class="tag">data</span><span class="tag">3–4 ч</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Репетитор должен знать как ученик справляется с тестами. Добавим сохранение результатов и простую аналитику.</p>
+        <ul class="steps-list">
+          <li>При нажатии «Проверить» в тесте — сохранять в данные <code>{date, selected, correct: bool}</code></li>
+          <li>Хранить массив <code>attempts</code> для каждого quiz-блока</li>
+          <li>В редакторе (режим репетитора) — показывать под каждым тестом: «N попыток, M% верных»</li>
+          <li>После правильного ответа — не давать проходить тест повторно (или сбрасывать кнопкой)</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Репетитор видит статистику по каждому тесту</div>
+      </div>
+    </div>
+
+    <div class="task" id="t8">
+      <div class="task-head" onclick="toggle('t8')">
+        <div class="done-mark" id="d-t8" onclick="markDone('t8',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-blue">8</div>
+        <div class="task-info">
+          <div class="task-title">Экспорт страницы ученика в PDF</div>
+          <div class="task-desc">Использовать window.print() + print-стили</div>
+        </div>
+        <div class="task-meta"><span class="tag">css</span><span class="tag">2 ч</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Иногда нужно распечатать материал или сохранить в PDF. Браузер умеет это сам — надо только правильно настроить стили.</p>
+        <ul class="steps-list">
+          <li>Добавить кнопку «Печать / PDF» в кабинете ученика</li>
+          <li>Написать блок <code>@media print</code> в CSS: скрыть topbar, кнопки, оставить только контент</li>
+          <li>Убедиться что формулы KaTeX и картинки рендерятся корректно при печати</li>
+          <li>Вызывать <code>window.print()</code> по клику на кнопку</li>
+          <li>Проверить в Chrome «Сохранить как PDF» — должна получиться чистая страница</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Красивый PDF без кнопок и навигации</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="level-header">
+    <span class="level-badge lvl-3">Уровень 3 — Архитектура</span>
+    <span class="level-title">Бэкенд и авторизация</span>
+    <span class="level-sub">4 задания</span>
+  </div>
+  <div class="tasks">
+
+    <div class="task" id="t9">
+      <div class="task-head" onclick="toggle('t9')">
+        <div class="done-mark" id="d-t9" onclick="markDone('t9',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-purple">9</div>
+        <div class="task-info">
+          <div class="task-title">Переехать на Supabase: хранить данные в БД</div>
+          <div class="task-desc">Создать таблицы students, blocks; подключить JS SDK</div>
+        </div>
+        <div class="task-meta"><span class="tag">sql</span><span class="tag">rest api</span><span class="tag">день</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>GitHub как хранилище данных — хак. Supabase — настоящая PostgreSQL база данных с бесплатным планом. Это следующая ступень.</p>
+        <ul class="steps-list">
+          <li>Создать проект на supabase.com (бесплатно), создать таблицы <code>students</code> и <code>pages</code></li>
+          <li>Подключить <code>@supabase/supabase-js</code> через CDN (unpkg)</li>
+          <li>Заменить функции <code>getData()</code> / <code>setData()</code> на вызовы Supabase</li>
+          <li>Протестировать: создать ученика — он должен появиться в таблице в Supabase Studio</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Данные живут в PostgreSQL, не в localStorage</div>
+        <button class="ask-btn" onclick="sendPrompt('Как подключить Supabase к vanilla JS проекту через CDN? Покажи пример insert и select')">Помощь с Supabase ↗</button>
+      </div>
+    </div>
+
+    <div class="task" id="t10">
+      <div class="task-head" onclick="toggle('t10')">
+        <div class="done-mark" id="d-t10" onclick="markDone('t10',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-purple">10</div>
+        <div class="task-info">
+          <div class="task-title">Настоящая авторизация через Supabase Auth</div>
+          <div class="task-desc">Email/пароль вместо самописной проверки строки</div>
+        </div>
+        <div class="task-meta"><span class="tag">auth</span><span class="tag">security</span><span class="tag">день</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Хранить пароли в открытом тексте — уязвимость. Supabase Auth делает хеширование и сессии за вас.</p>
+        <ul class="steps-list">
+          <li>Включить Email провайдер в Supabase → Authentication → Providers</li>
+          <li>Заменить <code>loginTutor()</code> на <code>supabase.auth.signInWithPassword()</code></li>
+          <li>Для учеников — создавать Supabase-пользователей программно через Admin API или хранить их credentials в отдельной таблице с хешем bcrypt</li>
+          <li>Настроить Row Level Security (RLS) — ученик видит только свои строки</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Пароли хешированы, ученик не может достать чужие данные</div>
+      </div>
+    </div>
+
+    <div class="task" id="t11">
+      <div class="task-head" onclick="toggle('t11')">
+        <div class="done-mark" id="d-t11" onclick="markDone('t11',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-purple">11</div>
+        <div class="task-info">
+          <div class="task-title">Переписать на React + Vite</div>
+          <div class="task-desc">Разбить один файл на компоненты, добавить роутинг</div>
+        </div>
+        <div class="task-meta"><span class="tag">react</span><span class="tag">vite</span><span class="tag">неделя</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>817 строк в одном файле — предел масштабируемости. React + компоненты — стандартный способ строить реальные приложения.</p>
+        <ul class="steps-list">
+          <li>Создать проект: <code>npm create vite@latest tutor-app -- --template react</code></li>
+          <li>Разбить на компоненты: <code>AuthScreen</code>, <code>Sidebar</code>, <code>BlockEditor</code>, <code>StudentView</code>, <code>BlockRenderer</code></li>
+          <li>Добавить <code>react-router-dom</code>: маршруты <code>/login</code>, <code>/tutor</code>, <code>/student/:id</code></li>
+          <li>Поднять состояние в <code>App.jsx</code> или использовать Context API</li>
+          <li>Деплой: <code>npm run build</code> → папка <code>dist</code> → GitHub Pages</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Проект из 10+ файлов-компонентов, URL меняется при навигации</div>
+      </div>
+    </div>
+
+    <div class="task" id="t12">
+      <div class="task-head" onclick="toggle('t12')">
+        <div class="done-mark" id="d-t12" onclick="markDone('t12',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-purple">12</div>
+        <div class="task-info">
+          <div class="task-title">Drag-and-drop сортировка блоков</div>
+          <div class="task-desc">Заменить кнопки ↑↓ на dnd-kit или HTML5 Drag API</div>
+        </div>
+        <div class="task-meta"><span class="tag">ux</span><span class="tag">dnd</span><span class="tag">2–3 дня</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Кнопки ↑↓ работают, но drag-and-drop — это UX уровня Notion. Изучить один из главных паттернов интерфейсов.</p>
+        <ul class="steps-list">
+          <li>Установить <code>@dnd-kit/core</code> и <code>@dnd-kit/sortable</code></li>
+          <li>Обернуть список блоков в <code>DndContext</code> и <code>SortableContext</code></li>
+          <li>Каждый блок сделать <code>useSortable</code>-компонентом с ручкой перетаскивания</li>
+          <li>Обновлять порядок блоков в state при событии <code>onDragEnd</code></li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Блоки перетаскиваются мышью как в Notion</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="level-header">
+    <span class="level-badge lvl-4">Уровень 4 — Продукт</span>
+    <span class="level-title">Многопользовательность</span>
+    <span class="level-sub">4 задания</span>
+  </div>
+  <div class="tasks">
+
+    <div class="task" id="t13">
+      <div class="task-head" onclick="toggle('t13')">
+        <div class="done-mark" id="d-t13" onclick="markDone('t13',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-coral">13</div>
+        <div class="task-info">
+          <div class="task-title">Регистрация репетиторов — мультитенантность</div>
+          <div class="task-desc">Несколько репетиторов на одном сервисе, изоляция данных</div>
+        </div>
+        <div class="task-meta"><span class="tag">multitenancy</span><span class="tag">неделя</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Сейчас сервис для одного репетитора. Превратить его в платформу, где регистрируются другие преподаватели.</p>
+        <ul class="steps-list">
+          <li>Добавить таблицу <code>tutors</code> в Supabase, связать учеников с репетитором через <code>tutor_id</code></li>
+          <li>Добавить страницу регистрации для репетитора</li>
+          <li>RLS-политики: репетитор видит только своих учеников, ученик — только свои данные</li>
+          <li>Настроить изолированные поддомены или пути: <code>/t/username/student/id</code></li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Два репетитора не видят учеников друг друга</div>
+      </div>
+    </div>
+
+    <div class="task" id="t14">
+      <div class="task-head" onclick="toggle('t14')">
+        <div class="done-mark" id="d-t14" onclick="markDone('t14',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-coral">14</div>
+        <div class="task-info">
+          <div class="task-title">Real-time: ученик видит изменения без перезагрузки</div>
+          <div class="task-desc">Supabase Realtime subscriptions</div>
+        </div>
+        <div class="task-meta"><span class="tag">websocket</span><span class="tag">realtime</span><span class="tag">3 дня</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Репетитор редактирует страницу — ученик видит изменения мгновенно. Это WebSocket под капотом Supabase.</p>
+        <ul class="steps-list">
+          <li>Включить Replication для таблицы <code>pages</code> в Supabase</li>
+          <li>В кабинете ученика подписаться: <code>supabase.channel('page').on('postgres_changes', ...)</code></li>
+          <li>При получении изменений — перерендерить блоки без перезагрузки страницы</li>
+          <li>Добавить индикатор «онлайн» — мигающую точку когда подключение активно</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Репетитор добавил блок — ученик увидел его за 1 сек</div>
+      </div>
+    </div>
+
+    <div class="task" id="t15">
+      <div class="task-head" onclick="toggle('t15')">
+        <div class="done-mark" id="d-t15" onclick="markDone('t15',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-coral">15</div>
+        <div class="task-info">
+          <div class="task-title">Мобильное приложение через PWA</div>
+          <div class="task-desc">manifest.json + service worker = установка на телефон</div>
+        </div>
+        <div class="task-meta"><span class="tag">pwa</span><span class="tag">offline</span><span class="tag">2–3 дня</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Без App Store, без Kotlin — превратить сайт в приложение, которое устанавливается на телефон и работает офлайн.</p>
+        <ul class="steps-list">
+          <li>Создать <code>manifest.json</code> с иконками, названием, <code>display: standalone</code></li>
+          <li>Написать <code>service-worker.js</code>: кешировать HTML, CSS, KaTeX при первом запуске</li>
+          <li>Зарегистрировать SW в <code>index.html</code>: <code>navigator.serviceWorker.register()</code></li>
+          <li>Проверить в Chrome DevTools → Application → Manifest и → Service Workers</li>
+          <li>Открыть на Android → «Добавить на главный экран»</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Иконка на телефоне, страницы грузятся офлайн</div>
+      </div>
+    </div>
+
+    <div class="task" id="t16">
+      <div class="task-head" onclick="toggle('t16')">
+        <div class="done-mark" id="d-t16" onclick="markDone('t16',event)" title="Отметить выполненным"></div>
+        <div class="task-num n-coral">16</div>
+        <div class="task-info">
+          <div class="task-title">Монетизация: подключить платёжную систему</div>
+          <div class="task-desc">Stripe или CloudPayments, тарифы Free / Pro</div>
+        </div>
+        <div class="task-meta"><span class="tag">payments</span><span class="tag">бизнес</span><span class="tag">неделя</span></div>
+        <i class="ti ti-chevron-right chevron" aria-hidden="true"></i>
+      </div>
+      <div class="task-body">
+        <p>Финальный шаг — из учебного проекта в реальный бизнес. Billing — самая сложная часть любого SaaS.</p>
+        <ul class="steps-list">
+          <li>Создать Stripe аккаунт (или CloudPayments для СНГ), настроить продукты и цены</li>
+          <li>Ограничить Free план: не больше 3 учеников</li>
+          <li>Добавить Supabase Edge Function для создания Stripe Checkout Session (бэкенд нельзя делать на фронте)</li>
+          <li>Вебхук от Stripe → обновлять поле <code>plan</code> у репетитора в БД</li>
+          <li>Показывать баннер «Обновите план» при превышении лимита</li>
+        </ul>
+        <div class="result-label">Результат задания</div>
+        <div class="result-value">Можно принять первый реальный платёж</div>
+        <button class="ask-btn" onclick="sendPrompt('Как правильно интегрировать Stripe в веб-приложение — какие части логики должны быть на сервере и почему нельзя делать платёжную логику на фронтенде?')">Объясни архитектуру ↗</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function toggle(id) {
+    const t = document.getElementById(id);
+    t.classList.toggle('open');
+  }
+  function markDone(id, e) {
+    e.stopPropagation();
+    const mark = document.getElementById('d-' + id);
+    mark.classList.toggle('checked');
+    if (mark.classList.contains('checked')) mark.innerHTML = '<i class="ti ti-check" style="font-size:11px"></i>';
+    else mark.innerHTML = '';
+    updateProgress();
+  }
+  function updateProgress() {
+    const all = document.querySelectorAll('[id^="d-t"]').length;
+    const done = document.querySelectorAll('[id^="d-t"].checked').length;
+    document.getElementById('prog-fill').style.width = Math.round(done/all*100) + '%';
+    document.getElementById('prog-count').textContent = done + ' / ' + all;
+  }
+</script>
